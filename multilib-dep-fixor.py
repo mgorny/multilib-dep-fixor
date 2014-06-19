@@ -59,7 +59,9 @@ def replace_dep(m):
 		print('*** Minimal EAPI5 version: %s' % min_eapi5)
 		min_multilib = None
 		for e in reversed(m_all):
-			if 'multilib-build' in e.inherits:
+			# skip EAPI=5 ebuilds as well to support multilib directly
+			# preceding first EAPI=5 version
+			if 'multilib-build' in e.inherits or e.eapi == '5':
 				min_multilib = e.version
 			else:
 				for f in e.use:
