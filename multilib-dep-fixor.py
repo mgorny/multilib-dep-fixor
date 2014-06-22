@@ -68,7 +68,7 @@ def replace_dep(m):
 
 		slotted_key = a.key
 		if a.slot:
-			slotted_key += a
+			slotted_key += a.slot
 		for x, pv in exceptions.items():
 			if slotted_key == x:
 				min_multilib = None
