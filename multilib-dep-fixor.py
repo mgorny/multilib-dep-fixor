@@ -13,6 +13,15 @@ repo = pm.repositories['gentoo']
 dep_matching_re = re.compile(r'[^\s"\']+\[\S*(?:\${MULTILIB_USEDEP}|abi_)',
 		re.UNICODE | re.MULTILINE)
 
+# usually packages that have newer versions masked and not expecting
+# to get the EAPI<5 versions unmasked anytime ;).
+exceptions = {
+	'dev-lang/lua': '5.1.5-r3',
+	'dev-libs/openssl': '1.0.1h-r2',
+	'dev-libs/openssl:0': '1.0.1h-r2',
+	'sys-libs/db': '4.8.30-r1',
+}
+
 def replace_dep(m):
 	dep = m.group(0)
 	print('** Regexp match: %s' % dep)
@@ -56,26 +65,32 @@ def replace_dep(m):
 				min_eapi5 = e.version
 			else:
 				break
-		print('*** Minimal EAPI5 version: %s' % min_eapi5)
-		min_multilib = None
-		for e in reversed(m_all):
-			# skip EAPI=5 ebuilds as well to support multilib directly
-			# preceding first EAPI=5 version
-			if 'multilib-build' in e.inherits or e.eapi == '5':
-				min_multilib = e.version
-			else:
-				for f in e.use:
-					if f.startswith('abi_'):
-						min_multilib = e.version
-						break
-				else:
-					break
-		print('*** Minimal multilib version: %s' % min_multilib)
 
-#		if not min_multilib:
-#			print(m_all)
-#			print(m_multilib)
-#			raise Exception('No multilib version matches %s!' % basedep)
+		slotted_key = a.key
+		if a.slot:
+			slotted_key += a
+		for x, pv in exceptions.items():
+			if slotted_key == x:
+				min_multilib = None
+				min_eapi5 = pv
+				print('*** Exception applied: %s' % pv)
+				break
+		else:
+			print('*** Minimal EAPI5 version: %s' % min_eapi5)
+			min_multilib = None
+			for e in reversed(m_all):
+				# skip EAPI=5 ebuilds as well to support multilib directly
+				# preceding first EAPI=5 version
+				if 'multilib-build' in e.inherits or e.eapi == '5':
+					min_multilib = e.version
+				else:
+					for f in e.use:
+						if f.startswith('abi_'):
+							min_multilib = e.version
+							break
+					else:
+						break
+			print('*** Minimal multilib version: %s' % min_multilib)
 
 		min_either = min_eapi5
 		if min_multilib and (not min_eapi5 or min_multilib < min_eapi5):
