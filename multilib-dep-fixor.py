@@ -16,6 +16,8 @@ dep_matching_re = re.compile(r'[^\s"\']+\[\S*(?:\${MULTILIB_USEDEP}|abi_)',
 # usually packages that have newer versions masked and not expecting
 # to get the EAPI<5 versions unmasked anytime ;).
 exceptions = {
+	'dev-libs/glib': '2.34.3', # seems to be the first EAPI=5 version
+	'dev-libs/glib:2': '2.34.3', # seems to be the first EAPI=5 version
 	'dev-lang/lua': '5.1.5-r3',
 	'dev-libs/openssl': '1.0.1h-r2',
 	'dev-libs/openssl:0': '1.0.1h-r2',
